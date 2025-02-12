@@ -77,6 +77,8 @@ def generate_build():
 # Wait 5 seconds for you to focus the target textbox/window.
 time.sleep(5)
 
+counter = 0
+
 while True:
     build = None
     while build is None:
@@ -85,8 +87,11 @@ while True:
     build_str = "/".join(str(stat) for stat in build)
     # Type the build instantly and press Enter.
     pyautogui.write(build_str, interval=0)
-    pyautogui.press("enter")
     # Added delay to ensure that the enter key is registered.
-    time.sleep(0.05)
-    # Wait 10 milliseconds before the next build.
+    time.sleep(0.25)
+    pyautogui.press("enter")
     time.sleep(0.01)
+    
+    counter += 1
+    if counter % 25 == 0:
+        time.sleep(5)
