@@ -27,36 +27,46 @@ def generate_build():
 
     # Fixed stats:
     build[0] = 5    # 1st stat is 5.
-    build[6] = 2    # 7th stat (index 6) is 2.
+    build[6] = 2    # 7th stat is 2.
 
     # Choose one additional stat (from indexes other than 0 and 6) to be 2.
     allowed_extra2 = [i for i in range(total_slots) if i not in (0, 6)]
     extra2_index = random.choice(allowed_extra2)
     build[extra2_index] = 2
 
-    # The remaining slots must sum to:
+    # The remaining slots:
     fixed_sum = 5 + 2 + 2  # = 9
     remaining_sum = 42 - fixed_sum  # = 33
-    # The remaining slots (7 in number) must be between 3 and 8.
-    # Let x = y + 3 (so y is between 0 and 5). Then the sum of the y's is:
-    y_total = remaining_sum - 7 * 3  # = 33 - 21 = 12.
-    variable_indices = [i for i in range(total_slots) if build[i] is None]
-    n = len(variable_indices)
 
-    y_solution = None
-    for _ in range(1000):
-        sol = random_y_solution(n, y_total, 5)
-        # Ensure at least one stat reaches 8 (i.e. one y equals 5)
-        if sol is not None and 5 in sol:
-            y_solution = sol
-            break
-    if y_solution is None:
+    # The remaining slots (let x = y + 3 so each stat is between 3 and 8)
+    # The required sum of the y's is:
+    y_total = remaining_sum - 7 * 3  # 33 - 21 = 12.
+    variable_indices = [i for i in range(total_slots) if build[i] is None]
+    n = len(variable_indices)  # This is 7.
+
+    # Force one of the variables to be 5 (i.e. x value 8)
+    forced_index = random.choice(variable_indices)
+    # Remove the forced index from the list to solve for the other n-1 slots.
+    variable_indices.remove(forced_index)
+    forced_y = 5
+    remaining_y_total = y_total - forced_y
+
+    # Solve for the other slots.
+    sol = random_y_solution(n - 1, remaining_y_total, 5)
+    if sol is None:
         return None
 
-    # Convert back: x = y + 3.
-    x_values = [y + 3 for y in y_solution]
-    for idx, val in zip(variable_indices, x_values):
-        build[idx] = val
+    # Build the full list of y's in order.
+    # Assign forced value.
+    y_solution = {forced_index: forced_y}
+    # Shuffle the order of the solution to match variable_indices order.
+    for idx, y_val in zip(variable_indices, sol):
+        y_solution[idx] = y_val
+
+    # Convert y's back to x's (x = y + 3).
+    for idx in range(total_slots):
+        if build[idx] is None:
+            build[idx] = y_solution[idx] + 3
 
     # Sanity check.
     if sum(build) != 42 or build[0] != 5 or build[6] != 2 or build.count(2) != 2 or max(build) != 8:
