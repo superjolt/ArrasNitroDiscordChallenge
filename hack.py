@@ -86,5 +86,7 @@ while True:
     # Type the build instantly and press Enter.
     pyautogui.write(build_str, interval=0)
     pyautogui.press("enter")
+    # Added delay to ensure that the enter key is registered.
+    time.sleep(0.05)
     # Wait 10 milliseconds before the next build.
     time.sleep(0.01)
